@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Omzet per stad 2025</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+<div id="map" style="width: 100%; height: 90vh;"></div>
+<script>
+var map = L.map('map').setView([39, -98], 4);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19
+}).addTo(map);
+
+// Dataset met punten i.p.v. komma's
+var cityData = [
+  { "City":"Miami", "Lat":25.76, "Lon":-80.19, "Revenue":1663000, "Projects":"Formula 1 - Miami 2025: $1.503.000<br>Formula E - Miami 2025: $81.000<br>Tortuga 2025: $79.000" },
+  { "City":"Las Vegas", "Lat":36.19, "Lon":-115.18, "Revenue":1273000, "Projects":"Las Vegas F1 2025: $1.273.000<br>When We Were Young 2025: $73.000<br>EDC Infield 2025: $426.000" },
+  { "City":"New York", "Lat":40.71, "Lon":-74.01, "Revenue":544000, "Projects":"CdS Luzia - New York 2025: $114.000<br>GovBall 2025: $84.000<br>Mirage Theater 2025: $200.000<br>Collective Retreats 2025: $101.000<br>Longines Global Champions Tour - NJ 2025: $45.000" },
+  { "City":"Chicago", "Lat":41.88, "Lon":-87.62, "Revenue":417000, "Projects":"Suenos Chicago 2025: $73.000<br>NASCAR Chicago 2025: $135.000<br>Lollapalooza 2025: $182.000<br>Bulls Fest 2025: $27.000" },
+  { "City":"Atlanta", "Lat":33.75, "Lon":-84.39, "Revenue":183000, "Projects":"MLB Week Atlanta 2025: $16.000<br>Shaky Knees 2025: $103.000<br>Georgia Pacific - Buffer System 2025: $42.000<br>Tour Championship 2025: $22.000" },
+  { "City":"Ocean City", "Lat":38.34, "Lon":-75.08, "Revenue":345000, "Projects":"Boardwalk Rock Festival 2025: $117.000<br>Oceans Calling 2025: $172.000<br>Country Calling 2025: $73.000" },
+  { "City":"Indio", "Lat":33.72, "Lon":-116.22, "Revenue":193000, "Projects":"Desert Champion 2025: $127.000<br>Coachella + Stagecoach 2025: $66.000" },
+  { "City":"Los Angeles", "Lat":34.05, "Lon":-118.24, "Revenue":177000, "Projects":"Frieze LA 2025: $77.000<br>Water partner - LA 2028: $100.000" },
+  { "City":"Memphis", "Lat":35.15, "Lon":-90.05, "Revenue":221000, "Projects":"River Beat Music Festival 2025: $84.000<br>SmokeSlam BBQ Festival 2025: $97.000<br>FedEx St. Jude 2025: $40.000" },
+  { "City":"Phoenix", "Lat":33.45, "Lon":-112.07, "Revenue":106000, "Projects":"Waste Management Phoenix Open 2025: $38.000<br>Innings Festival 2025: $77.000<br>NASCAR - Bottle Refill Units 2025: $29.000" },
+  { "City":"Boston", "Lat":42.36, "Lon":-71.06, "Revenue":70000, "Projects":"Boston Calling 2025: $70.000" },
+  { "City":"Lexington", "Lat":40.68, "Lon":-82.58, "Revenue":85000, "Projects":"Railbird 2025: $85.000" },
+  { "City":"Rothbury", "Lat":43.51, "Lon":-86.35, "Revenue":365000, "Projects":"Electric Forest 2025: $365.000" },
+  { "City":"Denver", "Lat":39.74, "Lon":-104.99, "Revenue":195000, "Projects":"CdS Echo - Denver 2025: $195.000" },
+  { "City":"St Paul", "Lat":44.94, "Lon":-93.09, "Revenue":82000, "Projects":"Minnesota Yacht Club 2025: $82.000" },
+  { "City":"Bend", "Lat":44.06, "Lon":-121.32, "Revenue":68000, "Projects":"Fairwell Festival 2025: $68.000" },
+  { "City":"Pine Mountain Club", "Lat":34.85, "Lon":-119.16, "Revenue":77000, "Projects":"PLMC 2025: $77.000" },
+  { "City":"Lake Perris", "Lat":33.85, "Lon":-117.19, "Revenue":23000, "Projects":"Starbase Music Festival 2025: $23.000" },
+  { "City":"Greenbay", "Lat":44.51, "Lon":-88.02, "Revenue":90000, "Projects":"NFL Draft 2025: $90.000" },
+  { "City":"Buena Vista", "Lat":38.26, "Lon":-120.89, "Revenue":81000, "Projects":"Field of Vision 2025: $81.000" },
+  { "City":"Austin", "Lat":30.27, "Lon":-97.73, "Revenue":261000, "Projects":"Besame Mucho TX 2025: $73.000<br>Austin City Limits 2025: $188.000" },
+  { "City":"Manchester", "Lat":35.48, "Lon":-86.09, "Revenue":394000, "Projects":"Bonnaroo 2025: $394.000" },
+  { "City":"Perryville", "Lat":37.72, "Lon":-89.86, "Revenue":93000, "Projects":"Perryville High School Temporary School 2025: $93.000" },
+  { "City":"Legend Valley", "Lat":39.94, "Lon":-82.41, "Revenue":272000, "Projects":"Lost Lands 2025: $272.000" }
+];
+
+cityData.forEach(function(city){
+  var radius = Math.sqrt(city.Revenue) * 100;
+
+  // Rood voor Atlanta en Las Vegas, blauw voor alle andere steden
+  var color = (city.City === "Atlanta" || city.City === "Las Vegas") ? 'red' : '#30a5ff';
+
+  L.circle([city.Lat, city.Lon], {
+    color: color,
+    fillColor: color,
+    fillOpacity: 0.6,
+    radius: radius
+  }).bindPopup(
+    "<b>" + city.City + "</b><br>" +
+    city.Projects + "<br>" +
+    "<b>Total Revenue: $" + city.Revenue.toLocaleString() + "</b>"
+  ).addTo(map);
+});
+</script>
+</body>
+</html>
